@@ -11,14 +11,15 @@ Loader.loadImage = function (key, src) {
 
     const d = new Promise(function (resolve, reject) {
         img.onload = function () {
+            console.log(img)
             this.images[key] = img;
             resolve(img);
-        }.bind(Loader);
+        }.bind(this);
 
         img.onerror = function () {
             reject('Could not load image: ' + src);
         };
-    }.bind(Loader));
+    }.bind(this));
 
     img.src = src;
     return d;
