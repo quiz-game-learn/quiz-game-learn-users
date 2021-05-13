@@ -5,14 +5,18 @@
 </template>
 
 <script>
+import {FriendCard} from './../pages/FriendCard'
+import {Game} from "./common";
+
 export default {
-  name:"DeleteDialog",
+  name:"LessonMap",
   props: {
     lesson: Array
   },
   methods:{
    created(){
-
+       let context = document.getElementById('demo').getContext('2d');
+       Game.run(context);
    }
   },
   computed: {

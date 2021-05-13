@@ -11,6 +11,7 @@ import QuizEntry from "@/views/QuizEntry.vue";
 import QuizResults from "@/views/QuizResults.vue";
 import LessonPart from "@/views/LessonPart.vue";
 import LessonResultsMenu from "@/views/LessonResults.vue";
+import LessonMapts from "@/components/map/LessonMapts.vue";
 
 Vue.use(VueRouter)
 
@@ -73,6 +74,12 @@ const routes: Array<RouteConfig> = [
     path: '/login',
     name: 'Login',
     component: Login,
+    meta: { requiresLogin: false }
+  },
+  {
+    path: '/map',
+    name: 'LessonMap',
+    component: LessonMapts,
     meta: { requiresLogin: false }
   },
   {
