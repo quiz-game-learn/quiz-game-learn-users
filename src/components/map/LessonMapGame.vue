@@ -102,7 +102,7 @@ export default class LessonMapGame extends Vue {
         for (let r = 0; r < this.map.rows; r++) {
           const tile = this.map.getTile(layer, c, r);
           if (tile !== 0) { // 0 => empty tile
-            console.log(tile, this.Game.tileAtlas,this.Loader.getImage('tiles'), this.map.tsize)
+            console.log(tile, this.Game.tileAtlas, this.Loader.getImage('tiles'), this.map.tsize)
             this.Game.ctx.drawImage(
                 this.Game.tileAtlas, // image
                 (tile - 1) * this.map.tsize, // source x
@@ -130,8 +130,26 @@ export default class LessonMapGame extends Vue {
 
   }
 
+  createClickListeners(canvas: any) {
+    const elemLeft = canvas.offsetLeft + canvas.clientLeft
+    const elemTop = canvas.offsetTop + canvas.clientTop
+
+    canvas.addEventListener('click', (event) => {
+      const x = event.pageX - elemLeft,
+          y = event.pageY - elemTop;
+
+      const imageLen = 64
+      const xCell = Math.floor(x/imageLen)
+      const yCell = Math.floor(y/imageLen)
+      console.log(xCell, yCell)
+    }, false);
+  }
+
   async mounted() {
     const canvas = document.getElementById('demo') as HTMLCanvasElement;
+
+    this.createClickListeners(canvas)
+
     const context = canvas.getContext('2d');
 
     this.createLoader()
