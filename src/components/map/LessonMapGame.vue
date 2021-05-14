@@ -134,7 +134,7 @@ export default class LessonMapGame extends Vue {
     const elemLeft = canvas.offsetLeft + canvas.clientLeft
     const elemTop = canvas.offsetTop + canvas.clientTop
 
-    canvas.addEventListener('click', (event) => {
+    canvas.addEventListener('click', (event: any) => {
       const x = event.pageX - elemLeft,
           y = event.pageY - elemTop;
 
