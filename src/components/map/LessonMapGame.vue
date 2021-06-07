@@ -32,11 +32,20 @@ export default class LessonMapGame extends Vue {
       4, 3, 3, 3, 3, 3, 3, 4,
       4, 0, 0, 0, 0, 0, 0, 4,
       4, 0, 0, 0, 0, 0, 0, 4,
-      4, 0, 0, 5, 0, 0, 0, 4,
+      4, 0, 0, 5, 5, 0, 0, 4,
       4, 0, 0, 0, 0, 0, 0, 4,
       4, 0, 0, 0, 0, 0, 0, 4,
       4, 4, 4, 0, 5, 4, 4, 4,
       0, 3, 3, 0, 0, 3, 3, 3
+    ], [
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 5, 5, 5, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
     ]],
     getTile: function (layer: any, col: number, row: number) {
       return this.layers[layer][row * this.cols + col];
@@ -77,7 +86,9 @@ export default class LessonMapGame extends Vue {
     this.Game.load = async () => {
       return [
         this.Loader.loadImage('tiles', 'tiles.png'),
-        this.Loader.loadImage('character', 'character.png')
+        this.Loader.loadImage('character', 'character.png'),
+        this.Loader.loadImage('tower', 'tower_low.png'),
+        this.Loader.loadImage('castle', 'castle.png')
       ];
     };
 
@@ -118,17 +129,19 @@ export default class LessonMapGame extends Vue {
         }
       }
     };
-
-    this.Game.render = () => {
-      // draw map background layer
-      this.Game._drawLayer(0);
-      // draw game sprites
-      this.Game.ctx.drawImage(this.Game.hero.image as any, this.Game.hero.x, this.Game.hero.y);
-      // draw map top layer
-      this.Game._drawLayer(1);
-    };
-
   }
+
+  public renderMap() {
+    // draw map background layer
+    this.Game._drawLayer(0);
+    // draw game sprites
+    this.Game.ctx.drawImage(this.Game.hero.image as any, this.Game.hero.x, this.Game.hero.y);
+    this.Game.ctx.drawImage(this.Loader.getImage('castle') as any, 248, 384);
+
+    // draw map top layer
+    this.Game._drawLayer(1);
+  }
+
 
   createClickListeners(canvas: any) {
     const elemLeft = canvas.offsetLeft + canvas.clientLeft
@@ -139,8 +152,8 @@ export default class LessonMapGame extends Vue {
           y = event.pageY - elemTop;
 
       const imageLen = 64
-      const xCell = Math.floor(x/imageLen)
-      const yCell = Math.floor(y/imageLen)
+      const xCell = Math.floor(x / imageLen)
+      const yCell = Math.floor(y / imageLen)
       console.log(xCell, yCell)
     }, false);
   }
@@ -157,7 +170,8 @@ export default class LessonMapGame extends Vue {
     this.createGame()
 
     await this.Game.run(context);
-    this.Game.render()
+
+    this.renderMap()
   }
 
 }
