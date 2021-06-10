@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import Vuex from 'vuex'
+import Vuex, {ActionHandler} from 'vuex'
 import {State} from "../models/State";
 import {setSelectedCourseMutation} from "@/store/mutations/selectedCourses.mutations";
 import {setSelectedCourseAction} from "@/store/actions/selectedCourseAction.actions";
@@ -13,6 +13,8 @@ import {setSelectedLessonAction} from "@/store/actions/selectedLessonAction.acti
 import {setSelectedLessonMutation} from "@/store/mutations/selectedLesson.mutations";
 import {setAvailableLessonsInCourseMutation} from "@/store/mutations/availableLessonsInCourse.mutations";
 import {setAvailableLessonsInCourse} from "@/store/actions/availableLessonsInCourse.actions";
+import {updateLevel} from "@/store/actions/updateLevel.actions";
+import {setLevelInfoMutation} from "@/store/mutations/setLevelInfo.mutations";
 
 Vue.use(Vuex)
 
@@ -37,6 +39,7 @@ export default new Vuex.Store({
         answers: [],
         status: null,
         lessons: null,
+        levelInfo: null,
         user: null,
         availableCoursesForUser: null,
         availableLessonsInCourse: null
@@ -46,6 +49,7 @@ export default new Vuex.Store({
         setSelectedLessonMutation: setSelectedLessonMutation,
         setUserMutation: setUserMutation,
         setLessonsMutation: setLessonsMutation,
+        setLevelInfo: setLevelInfoMutation,
         setAvailableCoursesForUserMutation: setAvailableCoursesForUserMutation,
         setAvailableLessonsInCourseMutation: setAvailableLessonsInCourseMutation,
     },
@@ -55,6 +59,7 @@ export default new Vuex.Store({
         setSelectedLessonAction: setSelectedLessonAction,
         setUser: setUser,
         setLessons: setLessons,
+        updateLevel: updateLevel as ActionHandler<State, State>,
         setAvailableCoursesForUser: setAvailableCoursesForUser,
         setAvailableLessonsInCourse: setAvailableLessonsInCourse,
     },

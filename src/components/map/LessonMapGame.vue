@@ -1,94 +1,119 @@
 <template>
-  <div class="main-wrapper">
-    <canvas id="demo" width="512" height="512"></canvas>
+  <div style="width: 400px; height:400px; margin: 10px auto;">
+    <canvas id="demo" width="400" height="400"></canvas>
   </div>
 </template>
 
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator';
 import {Lesson} from "@/models/Lessons";
+import {getLessonProgress} from "@/services/dbService";
+import {LessonsProgress} from "@/models/Progress";
 
 @Component({
   components: {},
 })
 export default class LessonMapGame extends Vue {
   @Prop({required: false, type: Array})
-  public lessons: Lesson | undefined
+  public lessons: Lesson[]
+  public lessonProgresses: LessonsProgress[] = [] as LessonsProgress[]
 
+  get user() {
+    return this.$store.state.user
+  }
+
+  public async getLessonProgresses() {
+    for (const lesson of this.lessons) {
+      let lessonProgress = await getLessonProgress(lesson.id, this.user.uid)
+      if (!lessonProgress) {
+        lessonProgress = {} as LessonsProgress
+        lessonProgress.percentDone = 0
+      }
+      this.lessonProgresses.push(lessonProgress as LessonsProgress)
+    }
+    this.$forceUpdate()
+
+  }
+
+  public tileSize = 50
+  public sizeMap = 8
   public map = {
-    cols: 8,
-    rows: 8,
-    tsize: 64,
-    layers: [[
-      3, 3, 3, 3, 3, 3, 3, 3,
-      3, 1, 1, 1, 1, 1, 1, 3,
-      3, 1, 1, 1, 1, 2, 1, 3,
-      3, 1, 1, 1, 1, 1, 1, 3,
-      3, 1, 1, 2, 1, 1, 1, 3,
-      3, 1, 1, 1, 2, 1, 1, 3,
-      3, 1, 1, 1, 2, 1, 1, 3,
-      3, 3, 3, 1, 2, 3, 3, 3
-    ], [
-      4, 3, 3, 3, 3, 3, 3, 4,
-      4, 0, 0, 0, 0, 0, 0, 4,
-      4, 0, 0, 0, 0, 0, 0, 4,
-      4, 0, 0, 5, 5, 0, 0, 4,
-      4, 0, 0, 0, 0, 0, 0, 4,
-      4, 0, 0, 0, 0, 0, 0, 4,
-      4, 4, 4, 0, 5, 4, 4, 4,
-      0, 3, 3, 0, 0, 3, 3, 3
-    ], [
-      0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 5, 5, 5, 0,
-      0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0,
-    ]],
+    cols: this.sizeMap,
+    rows: this.sizeMap,
+    tsize: this.tileSize,
+    layers: [
+      [
+        1, 3, 3, 3, 3, 3, 3, 1,
+        1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 2, 2, 1, 1, 1,
+        1, 3, 3, 2, 2, 3, 3, 1
+      ], [
+        1, 3, 3, 3, 3, 3, 3, 1,
+        1, 0, 0, 0, 0, 0, 0, 0,
+        1, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 4, 4, 0, 0, 4, 4, 0,
+        0, 3, 3, 0, 0, 3, 3, 0
+      ],
+      [
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 5, 5, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0
+      ]],
     getTile: function (layer: any, col: number, row: number) {
       return this.layers[layer][row * this.cols + col];
     }
   };
 
-  public Loader = {
-    images: {}
-  } as any;
+  public maxPixels = this.sizeMap * this.tileSize
 
-  public createLoader() {
-    this.Loader.loadImage = (key: string, src: string) => {
-      const img = new Image();
+  public images = {} as any
 
-      const d = new Promise((resolve: any, reject: any) => {
-        img.onload = () => {
-          this.Loader.images[key] = img;
-          resolve(img);
-        };
+  public loadImage = (key: string, src: string) => {
+    const img = new Image();
 
-        img.onerror = (err) => {
-          reject('Could not load image: ' + src);
-        };
-      });
+    const d = new Promise((resolve: any, reject: any) => {
+      img.onload = () => {
+        this.images[key] = img;
+        resolve(img);
+      };
 
-      img.src = src;
-      return d;
-    };
+      img.onerror = (err) => {
+        reject('Could not load image: ' + src);
+      };
+    });
 
-    this.Loader.getImage = (key: string) => {
-      return (key in this.Loader.images) ? this.Loader.images[key] : null;
-    };
-  }
+    img.src = src;
+    return d;
+  };
+
+  getImage = (key: string) => {
+    return (key in this.images) ? this.images[key] : null;
+  };
+
 
   public Game = {} as any;
 
   public createGame() {
     this.Game.load = async () => {
       return [
-        this.Loader.loadImage('tiles', 'tiles.png'),
-        this.Loader.loadImage('character', 'character.png'),
-        this.Loader.loadImage('tower', 'tower_low.png'),
-        this.Loader.loadImage('castle', 'castle.png')
+        this.loadImage('tiles', '../tiles_low.png'),
+        this.loadImage('character', '../character.png'),
+        this.loadImage('tower', '../tower_big.png'),
+        this.loadImage('castle', '../building.png'),
+        this.loadImage('flag', '../flag_blue.png'),
+        this.loadImage('hero', '../hero_behind.gif')
       ];
     };
 
@@ -98,13 +123,13 @@ export default class LessonMapGame extends Vue {
       this.Game._previousElapsed = 0;
 
       const p = await this.Game.load();
-      await Promise.all(p)
+      try {
+        await Promise.all(p)
+      } catch (e) {
+        console.log(e)
+      }
 
-      this.Game.tileAtlas = this.Loader.getImage('tiles');
-      console.log(this.Game.tileAtlas)
-      this.Game.hero = {x: 128, y: 384, image: this.Loader.getImage('character')};
-
-      //window.requestAnimationFrame(this.Game.tick);
+      this.Game.tileAtlas = await this.getImage('tiles');
     };
 
 
@@ -113,7 +138,6 @@ export default class LessonMapGame extends Vue {
         for (let r = 0; r < this.map.rows; r++) {
           const tile = this.map.getTile(layer, c, r);
           if (tile !== 0) { // 0 => empty tile
-            console.log(tile, this.Game.tileAtlas, this.Loader.getImage('tiles'), this.map.tsize)
             this.Game.ctx.drawImage(
                 this.Game.tileAtlas, // image
                 (tile - 1) * this.map.tsize, // source x
@@ -131,41 +155,58 @@ export default class LessonMapGame extends Vue {
     };
   }
 
+  public isCompleted(index: number) {
+    if (this.lessonProgresses[index]) {
+      return this.lessonProgresses[index].percentDone > 95
+    } else {
+      return false
+    }
+  }
+
   public renderMap() {
-    // draw map background layer
     this.Game._drawLayer(0);
-    // draw game sprites
-    this.Game.ctx.drawImage(this.Game.hero.image as any, this.Game.hero.x, this.Game.hero.y);
-    this.Game.ctx.drawImage(this.Loader.getImage('castle') as any, 248, 384);
 
-    // draw map top layer
+    this.Game.ctx.font = '10px serif';
+
+    this.Game.ctx.drawImage(this.getImage('hero'), 250, 250);
     this.Game._drawLayer(1);
+
+    const numTowers = this.lessons.length
+    const margin = 20
+    for (let i = 0; i < numTowers; i++) {
+      const nrow = Math.floor(i / 4)
+      const ncol = i % 4
+      const x = this.maxPixels * ncol / 4 + margin
+      const y = this.maxPixels * nrow / 4 + margin * (nrow+1)
+
+      if (i==numTowers-1){
+        this.Game.ctx.drawImage(this.getImage('tower') as any, x, y-50);
+        this.Game.ctx.fillText(this.lessons[i].title, x+45, y+10);
+
+      } else {
+        this.Game.ctx.drawImage(this.getImage('castle') as any, x, y);
+        this.Game.ctx.fillText(this.lessons[i].title, x, y);
+      }
+
+      if (this.isCompleted(i)) {
+        this.Game.ctx.drawImage(this.getImage('flag') as any, x, y);
+      }
+    }
+
+    this.Game._drawLayer(2);
+    this.$forceUpdate()
+
   }
 
-
-  createClickListeners(canvas: any) {
-    const elemLeft = canvas.offsetLeft + canvas.clientLeft
-    const elemTop = canvas.offsetTop + canvas.clientTop
-
-    canvas.addEventListener('click', (event: any) => {
-      const x = event.pageX - elemLeft,
-          y = event.pageY - elemTop;
-
-      const imageLen = 64
-      const xCell = Math.floor(x / imageLen)
-      const yCell = Math.floor(y / imageLen)
-      console.log(xCell, yCell)
-    }, false);
-  }
 
   async mounted() {
+    await this.getLessonProgresses()
+    this.lessons = [...this.lessons].reverse()
+    this.lessonProgresses = [...this.lessonProgresses].reverse()
+    console.log(this.lessons, this.lessonProgresses)
     const canvas = document.getElementById('demo') as HTMLCanvasElement;
 
-    this.createClickListeners(canvas)
-
     const context = canvas.getContext('2d');
-
-    this.createLoader()
 
     this.createGame()
 

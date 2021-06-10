@@ -22,7 +22,6 @@ export const getQuizzesAvailable = async (limit: number, skip: number): Promise<
     for (const doc of result.docs) {
         quizzes.push(doc.data() as Quiz)
     }
-    console.log(quizzes)
     return quizzes
 }
 
@@ -57,7 +56,6 @@ export const getLessonsAvailable = async (limit: number, skip: number): Promise<
     for (const doc of result.docs) {
         lessons.push(doc.data() as Lesson)
     }
-    console.log(lessons)
     return lessons
 }
 
@@ -69,7 +67,6 @@ export const getLessonsInCourse = async (limit: number, skip: number, courseId: 
     for (const doc of result.docs) {
         lessons.push(doc.data() as Lesson)
     }
-    console.log(lessons)
     return lessons
 }
 
@@ -91,7 +88,6 @@ export const getCoursesAvailable = async (limit: number, skip: number): Promise<
     for (const doc of result.docs) {
         lessons.push(doc.data() as Course)
     }
-    console.log(lessons)
     return lessons
 }
 
@@ -129,7 +125,6 @@ export const getCourse = async (id: string): Promise<Course | null> => {
 
 export const getPart = async (id: string): Promise<Part | null> => {
     const result = await partsCollection.where("id", "==", id).get()
-    console.log(id, result)
     if (result.docs[0]) return result.docs[0].data() as Part
     return null
 
@@ -160,7 +155,6 @@ export const getUserSolutions = async (quizId: string, userId: string): Promise<
     const result = await userSolutionsCollection.where("quizId", "==", quizId)
         .where("userId", "==", userId).get()
 
-    console.log(quizId, userId, result)
     if (result.docs[0]) return result.docs[0].data() as QuizUserSolution
     return null
 }
@@ -178,6 +172,31 @@ export const getLessonProgress = async (lessonId: string, userId: string): Promi
 
     if (result.docs[0]) return result.docs[0].data() as LessonsProgress
     return null
+}
+
+export const getLessonProgressAvailable = async (userId: string): Promise<LessonsProgress[]> => {
+    const result = await lessonProgressCollection
+        .where("userId", "==", userId).get()
+    const lessons = []
+
+    for (const doc of result.docs) {
+        lessons.push(doc.data() as LessonsProgress)
+    }
+    return lessons
+}
+
+
+export const getLessonResultsAvailable = async (userId: string): Promise<LessonResults[]> => {
+    console.log(userId)
+    const result = await lessonsResultsCollection
+        .where("finalQuizResult.userId", "==", userId).get()
+    const lessons = []
+
+    for (const doc of result.docs) {
+        lessons.push(doc.data() as LessonResults)
+    }
+    console.log(lessons)
+    return lessons
 }
 
 export const saveLessonProgress = async (lessonsProgress: LessonsProgress) => {
@@ -209,6 +228,5 @@ export const saveLessonResults = async (lessonResults: LessonResults) => {
     }
     lessonResults.updatedAt = new Date()
 
-    console.log(lessonResults)
     return lessonsResultsCollection.doc(lessonResults.id).set(lessonResults)
 }
