@@ -33,6 +33,7 @@ export default class CoursesMenu extends Vue {
 
   async created() {
     await this.$store.dispatch('setAvailableCoursesForUser')
+    this.$store.dispatch('updateLevel', {courseId: this.$route.params.courseId, userId:this.$store.state.user.uid})
     this.loading = false
   }
 

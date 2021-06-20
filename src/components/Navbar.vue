@@ -32,7 +32,6 @@
             <v-list-item-title>login</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
-
         <v-list-item v-if="user" @click="logout">
           <v-list-item-action>
             <v-icon>mdi-account</v-icon>
@@ -54,11 +53,24 @@
 
       <v-spacer></v-spacer>
 
-      <v-btn v-if="user && user.email" >
+      <div class="icon">
+        <v-img
+            src="@/assets/hero.png">
+        </v-img>
+      </div>
+
+      <div class="level" v-if="user && level" >
+        <v-chip>
+          {{ level }}
+        </v-chip>
+      </div>
+
+      <div v-if="user && user.email" >
         <v-chip>
           {{ user.email }}
         </v-chip>
-      </v-btn>
+      </div>
+
     </v-app-bar>
   </div>
 </template>
@@ -68,6 +80,7 @@
 <script lang="ts">
 import {Component, Vue} from 'vue-property-decorator';
 import {auth} from "@/firebase";
+import {State} from "@/models/State";
 
 @Component({
 })
@@ -76,6 +89,13 @@ export default class Navbar extends Vue {
 
   get user() {
     return this.$store.state.user
+  }
+  get level() {
+    console.log((this.$store.state as State).levelInfo)
+    if ((this.$store.state as State).levelInfo){
+      return (this.$store.state as State).levelInfo?.level
+    }
+    return null
   }
 
   created() {
@@ -86,6 +106,9 @@ export default class Navbar extends Vue {
     await auth.signOut()
     this.$router.push({ name: 'Login'})
   }
+  async levelClick(){
+    this.$router.push({ name: 'Home'})
+  }
 
 }
 </script>
@@ -94,5 +117,11 @@ export default class Navbar extends Vue {
 <style scoped>
  .userChip {
    padding-right:120px
+ }
+ .icon{
+   margin-right: -10px;
+ }
+ .level{
+   margin-right: 10px;
  }
 </style>
